@@ -138,6 +138,41 @@ Dashboard inserts a `pending` row. A small poller on the Mac (fold into `tick.sh
 4. **Command-queue (optional):** `us-outreach/run-once` + `discover/run`; add the Mac poller.
 5. **Hide on hosted:** India Pipeline page, India leads/segments/queue, bayesian panel (until its state is in Turso), all dropped execution buttons.
 
+## 8b. Page-by-page hosted status (final)
+
+Infrastructure now in place: `bayesian_state` (Turso), `command_queue` + `command_worker.py` (run_once + discover via `discover_jobs`), `us_scheduler_config.corpus_remaining` / `reveals_this_month` snapshot. With those, every page resolves to one of: **✅ works immediately from Turso**, **✅ works (with a triggered action via command-queue)**, or **🚫 hidden** (local dashboard / Mac only).
+
+### ✅ Works immediately from Turso (the US control panel)
+
+| Page | Source tables (Turso) | Notes |
+|---|---|---|
+| **Layout / heartbeat** | `mac_heartbeat` | MacBook Online/Offline (< 3 min) |
+| **Home `/`** | `company_enrichment`, `outreach_analytics`, `scheduler_config` | US summary counts; India part returns empty |
+| **Leads `/leads`** | `company_enrichment`, `company_contacts`, `outreach_analytics` | **US-only**; hide India segment filter; website edit = config-write |
+| **Contacts `/contacts`** | `company_contacts`, `company_enrichment`, `outreach_analytics` | US contact CRUD + notes; **hide** the summarize button + India `queue/next` |
+| **Campaigns `/campaigns`** | `campaign_templates` | full; `preview` = reimplement `{var}` substitution server-side; ab-promote = config-write |
+| **Analytics `/analytics`** | `outreach_analytics`, `bayesian_state` | full incl. **Bayesian panel** (now Turso-backed); ab-tests z-test math reimplemented server-side |
+| **US Outreach `/us-outreach`** | `us_scheduler_config`, `us_alerts`, `us_test_emails`, `outreach_analytics` | **the key page** — status reconstructed from these + `corpus_remaining`/`reveals_this_month` snapshot; config + test-emails = config-write |
+| **Info `/info`** | none | static |
+
+### ✅ Works via command-queue (dashboard writes intent, Mac executes)
+
+| Page / action | Mechanism |
+|---|---|
+| **US Outreach → Run Once** | insert `command_queue(Action='run_once')`; `command_worker` runs `orchestrator.run_cycle(force=True)` next tick |
+| **Discover `/discover`** | reads (`bulk_run_queries`, `discover_jobs`) work from Turso; **Run** inserts a `pending discover_jobs` row; `command_worker` executes it on the Mac. ⚠️ Discover produces *Places* leads, whose browsing pages are hidden (below) — confirm you still want Discover on hosted, since results are only viewable on the local dashboard. |
+
+### 🚫 Hidden on hosted (local dashboard / Mac only)
+
+| Page / control | Why |
+|---|---|
+| **Pipeline `/pipeline`** + `QueuePanel` | India MCA pipeline + SMTP sends (`pipeline/run`, `scheduler/send`, `queue/force-send`) — India data not in Turso, execution is Mac-only |
+| **Phone `/phone`** | Places calling workflow + `recheck-pixel` (Places + pixel checker — hidden) |
+| **Places browsing** | `places/search` + Places reads — hidden per decision |
+| Contacts → **Summarize** button | Gmail + AI execution (Mac-only) |
+| Leads → **India segment filter**, Contacts → **India queue** | India MCA (`vw_qualified_leads`) not in Turso |
+| Any **force-send / pixel / SMTP** trigger | Mac-only execution |
+
 ## 8. Locked decisions
 
 1. **Auth:** Basic Auth for now.
