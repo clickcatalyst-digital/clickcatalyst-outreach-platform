@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()  # load .env (SENDER_EMAIL, DB_PATH, etc.)
+import db_factory  # routes the main DB to Turso when TURSO_* env vars are set
 
 DB_PATH = os.getenv(
     'DB_PATH',
@@ -184,7 +185,7 @@ def update_replies_in_db(conn, replies):
 
 def check_replies():
     """Run one cycle of reply checking."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = db_factory.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
 
     records = get_unreplied_outreach(conn)

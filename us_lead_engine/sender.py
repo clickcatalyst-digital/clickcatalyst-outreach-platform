@@ -21,6 +21,7 @@ from email.mime.text import MIMEText
 
 from .config import MAIN_DB_PATH, DB_PATH as US_LEADS_DB
 from .personalization import build_personalized_line
+import db_factory
 
 SENDER_EMAIL = os.getenv("SENDER_EMAIL", "")
 SENDER_PASS  = os.getenv("SENDER_APP_PASS", "")
@@ -40,10 +41,9 @@ TEST_BATCH = "ustest"   # excluded from prod warmup/volume math
 
 
 def _conn():
-    c = sqlite3.connect(MAIN_DB_PATH, timeout=10)
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA busy_timeout = 5000")
-    return c
+    # Main shared DB: Turso when TURSO_URL/TURSO_AUTH_TOKEN are set, else local SQLite.
+    # (us_leads.db corpus connection in _signals_for stays on raw sqlite3 — Mac-only.)
+    return db_factory.connect(MAIN_DB_PATH)
 
 
 def _ensure_columns(conn):
@@ -53,7 +53,9 @@ def _ensure_columns(conn):
     ):
         try:
             conn.execute(ddl)
-        except sqlite3.OperationalError:
+        except Exception:
+            # Column already exists: raw sqlite3 raises OperationalError, libsql/Turso
+            # raises its own error type. Both mean "nothing to add" — ignore.
             pass
 
 

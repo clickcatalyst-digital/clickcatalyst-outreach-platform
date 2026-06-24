@@ -38,6 +38,7 @@ except Exception:
 
 from .config import MAIN_DB_PATH
 from . import sender
+import db_factory
 
 DEFAULTS = {
     "mode": "test",                 # test | prod
@@ -59,10 +60,9 @@ DEFAULTS = {
 # ---------------------------------------------------------------------------
 
 def _conn():
-    c = sqlite3.connect(MAIN_DB_PATH, timeout=10)
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA busy_timeout = 5000")
-    return c
+    # Main shared DB: Turso when TURSO_URL/TURSO_AUTH_TOKEN are set, else local SQLite.
+    # (us_leads.db corpus connections below stay on raw sqlite3 — Mac-only.)
+    return db_factory.connect(MAIN_DB_PATH)
 
 
 def ensure_tables():

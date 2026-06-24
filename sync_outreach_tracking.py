@@ -27,6 +27,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()  # load .env (DB_PATH, FIREBASE creds path, etc.)
+import db_factory  # routes the main DB to Turso when TURSO_* env vars are set
 
 # ---------------------------------------------------------------------------
 # CONFIG
@@ -154,7 +155,7 @@ def sync_events(db, dry_run=False):
         print("   No unsynced events found.")
         return 0
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = db_factory.connect(DB_PATH)
     cursor = conn.cursor()
 
     processed = 0
@@ -214,7 +215,7 @@ def sync_events(db, dry_run=False):
 def write_heartbeat(processed=0):
     """Record that the sync ran, so the orchestrator can alert if it stalls."""
     try:
-        conn = sqlite3.connect(DB_PATH, timeout=10)
+        conn = db_factory.connect(DB_PATH)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS tracking_sync_heartbeat (
                 ID INTEGER PRIMARY KEY CHECK (ID = 1),
