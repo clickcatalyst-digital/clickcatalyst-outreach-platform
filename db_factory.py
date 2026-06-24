@@ -129,7 +129,10 @@ class _Conn:
 def connect(local_path):
     """Main-DB connection. Turso when configured, else local SQLite at local_path."""
     if using_turso():
-        import libsql_experimental as libsql
+        try:
+            import libsql_experimental as libsql
+        except ImportError:
+            import libsql_client as libsql
         return _Conn(libsql.connect(TURSO_URL, auth_token=TURSO_AUTH_TOKEN))
 
     conn = sqlite3.connect(local_path, timeout=10, check_same_thread=False)
