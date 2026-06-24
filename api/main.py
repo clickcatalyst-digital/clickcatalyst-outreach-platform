@@ -2,6 +2,8 @@
 # FastAPI backend entry point
 # Run with: uvicorn api.main:app --reload --port 8000
 
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,9 +13,18 @@ from .routes import us_outreach
 
 app = FastAPI(title="ClickCatalyst Ops API", version="1.0.0")
 
+# Comma-separated browser origins allowed to call the API. Defaults to local dev.
+# Set CORS_ALLOW_ORIGINS on Render to include the deployed dashboard origin, e.g.
+#   http://localhost:3000,https://clickcatalyst-dashboard.onrender.com
+ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.getenv("CORS_ALLOW_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
