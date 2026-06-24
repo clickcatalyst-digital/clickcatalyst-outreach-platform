@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd job: stamps mac_heartbeat in Turso every 60 seconds so the dashboard
+  can show MacBook Online/Offline. Stops when the Mac sleeps -> timestamp goes
+  stale -> dashboard shows Offline.
+
+  Install:
+    cp scripts/com.clickcatalyst.heartbeat.plist ~/Library/LaunchAgents/
+    launchctl load   ~/Library/LaunchAgents/com.clickcatalyst.heartbeat.plist   # start
+    launchctl list | grep clickcatalyst                                          # verify
+  Stop / remove:
+    launchctl unload ~/Library/LaunchAgents/com.clickcatalyst.heartbeat.plist
+
+  Log: research_leads/logs/heartbeat.log
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.clickcatalyst.heartbeat</string>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/pujan/Developer/research_leads</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/pujan/.pyenv/shims/python</string>
+        <string>/Users/pujan/Developer/research_leads/heartbeat.py</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/pujan/.pyenv/shims:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+
+    <key>StartInterval</key>
+    <integer>60</integer>              <!-- every 60 seconds -->
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/pujan/Developer/research_leads/logs/heartbeat.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/pujan/Developer/research_leads/logs/heartbeat.log</string>
+</dict>
+</plist>
