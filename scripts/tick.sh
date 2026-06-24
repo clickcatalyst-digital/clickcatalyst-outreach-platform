@@ -38,6 +38,7 @@ run() {  # run <name> <command...>
 run orchestrator "$PY" -m us_lead_engine.orchestrator --once
 run sync         "$PY" sync_outreach_tracking.py
 run replies      "$PY" reply_tracker.py
+run commands     "$PY" command_worker.py
 
 # Retention: keep only the last 7 days of logs.
 find "$LOG_DIR" -name '*.log' -mtime +7 -delete 2>/dev/null

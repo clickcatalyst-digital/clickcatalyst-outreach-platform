@@ -404,6 +404,15 @@ def run_cycle(verbose=True, force=False):
     recompute_alerts(conn, cfg)
     set_config("last_cycle_at", _now_cst().isoformat())   # heartbeat — proves the daemon is alive
 
+    # Status snapshot for the hosted (Turso-only) dashboard. corpus_remaining is
+    # Turso-derivable (company_enrichment+company_contacts) but mirrored here for a
+    # single-source status row; reveals_this_month is Mac-only (us_leads.db cost log).
+    try:
+        set_config("corpus_remaining", str(sender.corpus_remaining(conn)))
+        set_config("reveals_this_month", str(_reveals_this_month(conn)))
+    except Exception:
+        pass
+
     if cfg.get("enabled", "true") != "true":
         if verbose: print("   ⏸ disabled")
         conn.close(); return
