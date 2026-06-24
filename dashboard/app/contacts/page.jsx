@@ -361,6 +361,7 @@ function ContactDetail({ contact }) {
         {summary
           ? <div style={{ fontSize: 12.5, lineHeight: 1.6, color: 'var(--text)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 12px' }}>{summary}</div>
           : <div style={{ fontSize: 12, color: 'var(--muted)' }}>No summary yet — generated automatically once they reply, or on demand.</div>}
+        {process.env.NEXT_PUBLIC_HOSTED !== 'true' && (
         <button onClick={summarize} disabled={summarizing} style={{
           marginTop: 10, display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border)',
@@ -368,6 +369,7 @@ function ContactDetail({ contact }) {
         }}>
           <Sparkles size={13} /> {summarizing ? 'Summarizing…' : 'Summarize thread'}
         </button>
+        )}
         {sumMsg && <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 6 }}>{sumMsg}</div>}
         <div style={{ display: 'flex', gap: 14, marginTop: 14, fontSize: 12, color: 'var(--muted)' }}>
           {contact.LinkedIn_URL && <a href={contact.LinkedIn_URL} target="_blank" rel="noreferrer" style={{ color: 'var(--blue)', textDecoration: 'none' }}>LinkedIn ↗</a>}

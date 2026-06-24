@@ -1,0 +1,26 @@
+# Render Blueprint for the hosted US control-panel dashboard (Next.js).
+# The Mac stays private (FastAPI + workers run locally); this service only talks to Turso.
+#
+# Deploy: Render Dashboard -> New + -> Blueprint -> pick this repo. Then set the
+# secret env vars (TURSO_URL, TURSO_AUTH_TOKEN, BASIC_AUTH_USER, BASIC_AUTH_PASS).
+services:
+  - type: web
+    name: clickcatalyst-dashboard
+    runtime: node
+    rootDir: dashboard
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: TURSO_URL            # libsql://<your-db>.turso.io   (set in Render UI)
+        sync: false
+      - key: TURSO_AUTH_TOKEN     # Turso token                   (set in Render UI)
+        sync: false
+      - key: BASIC_AUTH_USER      # dashboard login user          (set in Render UI)
+        sync: false
+      - key: BASIC_AUTH_PASS      # dashboard login password      (set in Render UI)
+        sync: false
+      - key: NEXT_PUBLIC_API_URL  # client calls the app's own route handlers
+        value: /api
+      - key: NEXT_PUBLIC_HOSTED   # US-only build (hides India/Places/Pipeline/Phone)
+        value: "true"
