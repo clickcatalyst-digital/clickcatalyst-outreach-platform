@@ -49,6 +49,8 @@ DB_PATH = os.getenv(
 # File to persist model state between runs
 MODEL_STATE_FILE = os.getenv('MODEL_STATE', 'bayesian_model_state.json')
 
+import db_factory  # mirror deliverability state to Turso so the hosted dashboard can read it
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PART 1: THOMPSON SAMPLING FOR VARIANT SELECTION
@@ -200,14 +202,42 @@ class DeliverabilityEstimator:
                 self.decay = state.get('decay', 0.8)
 
     def save_state(self):
-        """Persist state to disk."""
+        """Persist state to disk (engine continuity) AND mirror to Turso (dashboard reads)."""
+        history = self.history[-90:]  # Keep last 90 entries
+        updated_at = datetime.now().isoformat()
         with open(MODEL_STATE_FILE, 'w') as f:
             json.dump({
                 'reputation': self.reputation,
-                'history': self.history[-90:],  # Keep last 90 entries
+                'history': history,
                 'decay': self.decay,
-                'updated_at': datetime.now().isoformat(),
+                'updated_at': updated_at,
             }, f, indent=2)
+
+        # Mirror to Turso so the hosted dashboard can read deliverability without the Mac.
+        try:
+            conn = db_factory.connect(DB_PATH)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS bayesian_state (
+                    ID INTEGER PRIMARY KEY CHECK (ID = 1),
+                    Reputation REAL,
+                    History_Json TEXT,
+                    Decay REAL,
+                    Updated_At TEXT
+                )
+            """)
+            conn.execute("""
+                INSERT INTO bayesian_state (ID, Reputation, History_Json, Decay, Updated_At)
+                VALUES (1, ?, ?, ?, ?)
+                ON CONFLICT(ID) DO UPDATE SET
+                    Reputation   = excluded.Reputation,
+                    History_Json = excluded.History_Json,
+                    Decay        = excluded.Decay,
+                    Updated_At   = excluded.Updated_At
+            """, (self.reputation, json.dumps(history), self.decay, updated_at))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"   ⚠ bayesian Turso mirror failed: {e}")
 
     def compute_daily_signals(self):
         """Pull daily aggregate signals from outreach_analytics."""

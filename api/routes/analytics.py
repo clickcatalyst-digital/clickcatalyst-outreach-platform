@@ -391,26 +391,38 @@ def get_bayesian_status(country: Optional[str] = None):
             'ci_high': round(min(1, mean + 1.96 * math.sqrt(mean*(1-mean)/max(r['total'],1))), 4),
         })
 
-    # Deliverability state
-    model_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'bayesian_model_state.json')
+    # Deliverability state — prefer Turso (Mac-independent, works on hosted dashboard),
+    # fall back to the local JSON file for at-the-Mac dev.
     deliverability = {"reputation": 0.7, "trend": "no_data", "history": []}
-    if os.path.exists(model_file):
-        try:
-            with open(model_file) as f:
-                state = json.load(f)
-                deliverability = {
-                    "reputation": state.get("reputation", 0.7),
-                    "trend": "stable",
-                    "history": state.get("history", [])[-14:],
-                }
-                if len(deliverability["history"]) >= 3:
-                    recent = [h["reputation"] for h in deliverability["history"][-5:]]
-                    older = [h["reputation"] for h in deliverability["history"][-10:-5]]
-                    if older:
-                        diff = sum(recent)/len(recent) - sum(older)/len(older)
-                        deliverability["trend"] = "improving" if diff > 0.05 else "declining" if diff < -0.05 else "stable"
-        except Exception:
-            pass
+    state = None
+    try:
+        brow = cursor.execute(
+            "SELECT Reputation, History_Json FROM bayesian_state WHERE ID = 1").fetchone()
+        if brow and brow["Reputation"] is not None:
+            state = {"reputation": brow["Reputation"],
+                     "history": json.loads(brow["History_Json"] or "[]")}
+    except Exception:
+        state = None
+    if state is None:
+        model_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'bayesian_model_state.json')
+        if os.path.exists(model_file):
+            try:
+                with open(model_file) as f:
+                    state = json.load(f)
+            except Exception:
+                state = None
+    if state:
+        deliverability = {
+            "reputation": state.get("reputation", 0.7),
+            "trend": "stable",
+            "history": state.get("history", [])[-14:],
+        }
+        if len(deliverability["history"]) >= 3:
+            recent = [h["reputation"] for h in deliverability["history"][-5:]]
+            older = [h["reputation"] for h in deliverability["history"][-10:-5]]
+            if older:
+                diff = sum(recent)/len(recent) - sum(older)/len(older)
+                deliverability["trend"] = "improving" if diff > 0.05 else "declining" if diff < -0.05 else "stable"
 
     # Reply stats
     cursor.execute(f"""
