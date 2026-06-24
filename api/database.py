@@ -3,16 +3,16 @@
 
 import sqlite3
 import os
+import db_factory
 
 DB_PATH = os.getenv(
     "DB_PATH",
     "/Users/pujan/Developer/data_collector/indian_companies/company_master_data.db"
 )
 
-def get_conn() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # returns dict-like rows
-    return conn
+def get_conn():
+    # Turso when TURSO_URL/TURSO_AUTH_TOKEN are set, else local SQLite (see db_factory).
+    return db_factory.connect(DB_PATH)
 
 
 def country_filter(country, cin_col="CIN", batch_col=None):

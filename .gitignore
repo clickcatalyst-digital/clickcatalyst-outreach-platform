@@ -32,4 +32,6 @@ dashboard/node_modules/
 dashboard/.next/
 
 # macOS
+**/__pycache__/
+*.pyc
 .DS_Store
