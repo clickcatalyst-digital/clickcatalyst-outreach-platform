@@ -4,4 +4,4 @@ python-dotenv
 requests
 pandas
 numpy
-libsql-client
+libsql==0.1.11
