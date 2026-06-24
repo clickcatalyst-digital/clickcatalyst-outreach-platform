@@ -7,7 +7,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import pipeline, leads, contacts, campaigns, analytics, places, interactions, discover
+from .routes import pipeline, leads, contacts, campaigns, analytics, places, interactions, discover, status
 from .routes.queue import router as queue_router
 from .routes import us_outreach
 
@@ -40,6 +40,7 @@ app.include_router(interactions.router, prefix="/api/interactions", tags=["Inter
 app.include_router(discover.router,     prefix="/api/discover",     tags=["Discover"])
 app.include_router(queue_router, prefix="/api/queue")
 app.include_router(us_outreach.router, prefix="/api/us-outreach", tags=["US Outreach"])
+app.include_router(status.router, prefix="/api/status", tags=["Status"])
 
 @app.get("/api/health")
 def health():
