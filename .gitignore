@@ -1,0 +1,35 @@
+# Secrets
+.env
+.env.*
+credentials.json
+token.json
+keys/
+
+# Databases
+*.db
+temp.db
+
+# SQL dumps
+outreach_turso.sql
+schema_only.sql
+data_only.sql
+*.bak
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Next.js
+dashboard/node_modules/
+dashboard/.next/
+
+# macOS
+.DS_Store
