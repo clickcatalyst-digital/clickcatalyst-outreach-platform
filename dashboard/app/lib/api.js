@@ -32,6 +32,7 @@ export async function apiFetch(path, options = {}) {
 
 // Global country scope (India = MCA pipeline, US = Apollo pipeline).
 export function getCountry() {
+  if (process.env.NEXT_PUBLIC_HOSTED === 'true') return 'us'  // hosted build = US-only
   if (typeof window === 'undefined') return 'us'
   return localStorage.getItem('cc_country') || 'us'
 }

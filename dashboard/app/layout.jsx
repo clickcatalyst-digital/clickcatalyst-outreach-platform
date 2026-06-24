@@ -10,10 +10,13 @@ import {
   Zap, Search, Users, Mail, BarChart2, Activity, Phone, Compass, Radar, BookOpen
 } from 'lucide-react'
 
-const COUNTRIES = [
-  { key: 'india', label: '🇮🇳 India (MCA)' },
-  { key: 'us',    label: '🇺🇸 US (Apollo)' },
-]
+// Hosted build is US-only (India/Places/Pipeline are local-only); local dev keeps both.
+const COUNTRIES = process.env.NEXT_PUBLIC_HOSTED === 'true'
+  ? [{ key: 'us', label: '🇺🇸 US (Apollo)' }]
+  : [
+      { key: 'india', label: '🇮🇳 India (MCA)' },
+      { key: 'us',    label: '🇺🇸 US (Apollo)' },
+    ]
 
 const NAV = [
   { href: '/',            label: 'Home',         icon: Activity },
