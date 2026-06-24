@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useRef, Fragment } from 'react'
 import { Search, ChevronLeft, ChevronRight, ExternalLink, SkipForward, Save, Plus, Keyboard, Eye, MousePointerClick, Reply, Sparkles } from 'lucide-react'
 import { getCountry } from '../lib/api'
 
-const API = 'http://localhost:8000/api'
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
 const JOB_TITLES = [
   'Founder', 'Co-Founder', 'CEO', 'CMO', 'Head of Marketing',

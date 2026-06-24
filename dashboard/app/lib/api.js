@@ -3,7 +3,7 @@
 // Shared fetch wrapper for the ops dashboard.
 // Shows connection status instead of crashing on failed fetches.
 
-const API = 'http://localhost:8000/api'
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
 let _toastCallback = null
 

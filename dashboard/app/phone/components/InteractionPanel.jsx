@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Phone, Globe, MapPin, Star, MessageSquare, X, RotateCw } from 'lucide-react'
 import { fetchInteractions, postInteraction, deleteInteraction } from '../lib/api'
+import { API } from '../../lib/api'
 
 export default function InteractionPanel({ lead, onClose, onInteractionChange }) {
   const [interactions, setInteractions] = useState([])
@@ -19,7 +20,7 @@ export default function InteractionPanel({ lead, onClose, onInteractionChange })
     if (!lead || rechecking) return
     setRechecking(true)
     try {
-      const res = await fetch(`http://localhost:8000/api/places/recheck-pixel/${lead.CIN}`, {
+      const res = await fetch(`${API}/places/recheck-pixel/${lead.CIN}`, {
         method: 'POST',
       })
       const data = await res.json()

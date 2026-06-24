@@ -8,7 +8,7 @@ import {
   LineChart, Line, CartesianGrid, ResponsiveContainer, Legend
 } from 'recharts'
 
-const API = 'http://localhost:8000/api'
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
 export default function AnalyticsPage() {
   const [overview, setOverview]   = useState(null)

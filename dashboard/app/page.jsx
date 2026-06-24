@@ -10,7 +10,7 @@ import {
   Brain, Phone, Radar
 } from 'lucide-react'
 
-const API = 'http://localhost:8000/api'
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
 export default function HomePage() {
   const [status, setStatus]       = useState(null)

@@ -5,7 +5,7 @@ import './globals.css'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { getCountry, setCountry } from './lib/api'
+import { getCountry, setCountry, API } from './lib/api'
 import {
   Zap, Search, Users, Mail, BarChart2, Activity, Phone, Compass, Radar, BookOpen
 } from 'lucide-react'
@@ -58,7 +58,7 @@ export default function RootLayout({ children }) {
   const [apiDown, setApiDown] = useState(false)
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/health')
+    fetch(`${API}/health`)
       .then(r => { if (!r.ok) throw new Error(); setApiDown(false) })
       .catch(() => setApiDown(true))
   }, [path])
