@@ -1,0 +1,62 @@
+{
+  "ahmedabad": {
+    "name": "Ahmedabad",
+    "lat": 23.0225,
+    "lng": 72.5714,
+    "radius_m": 30000
+  },
+  "mumbai": {
+    "name": "Mumbai",
+    "lat": 19.0760,
+    "lng": 72.8777,
+    "radius_m": 40000
+  },
+  "bangalore": {
+    "name": "Bangalore",
+    "lat": 12.9716,
+    "lng": 77.5946,
+    "radius_m": 35000
+  },
+  "pune": {
+    "name": "Pune",
+    "lat": 18.5204,
+    "lng": 73.8567,
+    "radius_m": 25000
+  },
+  "delhi": {
+    "name": "Delhi",
+    "lat": 28.6139,
+    "lng": 77.2090,
+    "radius_m": 35000
+  },
+  "hyderabad": {
+    "name": "Hyderabad",
+    "lat": 17.3850,
+    "lng": 78.4867,
+    "radius_m": 30000
+  },
+  "chennai": {
+    "name": "Chennai",
+    "lat": 13.0827,
+    "lng": 80.2707,
+    "radius_m": 30000
+  },
+  "kolkata": {
+    "name": "Kolkata",
+    "lat": 22.5726,
+    "lng": 88.3639,
+    "radius_m": 25000
+  },
+  "jaipur": {
+    "name": "Jaipur",
+    "lat": 26.9124,
+    "lng": 75.7873,
+    "radius_m": 20000
+  },
+  "kochi": {
+    "name": "Kochi",
+    "lat": 9.9312,
+    "lng": 76.2673,
+    "radius_m": 20000
+  }
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd job: runs the US outreach engine tick every 20 minutes in the background.
+
+  Install:
+    cp scripts/com.clickcatalyst.us.plist ~/Library/LaunchAgents/
+    launchctl load   ~/Library/LaunchAgents/com.clickcatalyst.us.plist     # start
+    launchctl list | grep clickcatalyst                                     # verify
+  Stop / remove:
+    launchctl unload ~/Library/LaunchAgents/com.clickcatalyst.us.plist
+
+  Logs: per-run, dated, in research_leads/logs/ (auto-pruned to 7 days by tick.sh).
+  This launchd boot/keepalive log is the wrapper-level catch-all.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.clickcatalyst.us</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/pujan/Developer/research_leads/scripts/tick.sh</string>
+    </array>
+
+    <key>StartInterval</key>
+    <integer>1200</integer>            <!-- every 20 minutes -->
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/pujan/Developer/research_leads/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/pujan/Developer/research_leads/logs/launchd.err.log</string>
+</dict>
+</plist>

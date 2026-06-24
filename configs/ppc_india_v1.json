@@ -1,0 +1,16 @@
+{
+  "name": "ppc_india_v1",
+  "description": "PPC and Google Ads agencies in top 3 Indian metros",
+  "cities": ["ahmedabad", "mumbai", "bangalore"],
+  "query_templates": [
+    "PPC agency in {city}",
+    "Google Ads agency in {city}",
+    "performance marketing agency in {city}",
+    "digital marketing agency in {city}",
+    "SEM agency in {city}",
+    "paid media agency in {city}"
+  ],
+  "max_results_per_query": 20,
+  "delay_between_calls_seconds": 1,
+  "max_retries_per_query": 3
+}

@@ -1,0 +1,92 @@
+{
+  "_instructions": "Single source of truth for outreach copy. Edit THIS when the product changes; the variant generator regenerates email arms from it (you never hand-edit templates). Fields marked FILL: need your real input. Everything else is drawn from what_is_clickcatalyst.txt — correct anything wrong.",
+
+  "product": {
+    "name": "ClickCatalyst",
+    "interface_brand": "ClickHub",
+    "url": "https://clickcatalyst.digital",
+    "free_audit_url": "https://clickcatalyst.digital/free-audit",
+    "category": "Google Ads observability, diagnostic & optimization platform",
+    "one_liner": "Google Ads observability for agencies — automatically surfaces the waste, tracking issues, and optimization opportunities Google's own interface hides, packaged as client-ready white-label audit reports.",
+    "based_in": "Ahmedabad, Gujarat, India"
+  },
+
+  "narrative": {
+    "enemy": "Google can't audit its own waste — and it's incentivized to grow spend, not protect your client's margin.",
+    "hook": "Google says the account is healthy; the P&L says otherwise.",
+    "core_belief": "Most Google Ads waste is invisible in the standard interface. ClickCatalyst surfaces it through structured diagnostics, quantifies it in dollars, and gives one-click fixes."
+  },
+
+  "funnel": {
+    "cold_email": "Problem (invisible waste) -> offer a free audit of one client account",
+    "vehicle": "White-label PDF audit report — the concrete, low-risk deliverable that earns trust",
+    "demo": "ClickHub — continuous diagnostics across Levels 0-8",
+    "subscription": "Pro / Business plans — ongoing observability, not one-off PDFs"
+  },
+
+  "icp": {
+    "who": "Small/medium US digital & advertising agencies running Google Ads for clients (~5-50 client accounts)",
+    "buyer_roles": ["Founder", "Owner", "CEO", "Co-Founder", "Managing Director"],
+    "pains": [
+      "Auditing client accounts is manual and eats senior PPC hours",
+      "Performance Max is a black box — almost no visibility into what it's doing or wasting",
+      "Hard to continuously prove ROI and justify retainers to clients",
+      "Onboarding a new client means a slow manual audit first",
+      "Wasted spend, tracking gaps, and bad conversion signals are invisible in Google's native UI"
+    ]
+  },
+
+  "value_props": [
+    {"headline": "Finds the invisible waste", "detail": "Structured diagnostics surface wasted spend, search-term bleed, tracking mismatches, and bad conversion signals that don't show in Google's UI"},
+    {"headline": "Quantified in dollars", "detail": "Every issue is sized in $ ('this is burning $X/mo'), not abstract scores"},
+    {"headline": "White-label, client-ready", "detail": "18+ branded PDF report types, 'Prepared for [Client] — Powered by clickcatalyst.digital', generated in minutes instead of hours"},
+    {"headline": "PMax & AI Max observability", "detail": "Opens the least transparent campaign types Google ships — asset groups, signal health, attribution drift, algorithm readiness"},
+    {"headline": "Diagnostic-first, one-click fixes", "detail": "Tells you what's wrong, why, and gives embedded actions to fix it — not just reporting"}
+  ],
+
+  "proof_points": [],
+  "_proof_status": "pre-launch — no fabricated proof in copy; lean on the concrete free audit + the problem narrative. Founding Agency scarcity is saved for the reply, not the cold email.",
+
+  "differentiators": [
+    "Diagnostic-first, not a reporting or automation tool",
+    "Quantifies waste in dollars, not vanity scores",
+    "PMax / AI Max observability that native reporting intentionally hides",
+    "Fully white-label for client delivery"
+  ],
+
+  "cta_options": [
+    {"key": "free_audit_promo", "text": "Reply and I'll send a promo code for a free audit (one of 13) on a real client account", "ask_level": "low", "recommended": true},
+    {"key": "sample_pdf", "text": "Offer to send a sample PDF report so they see the output first", "ask_level": "lowest"},
+    {"key": "reply_question", "text": "Ask how they currently audit client accounts at scale", "ask_level": "lowest"},
+    {"key": "demo", "text": "Link to the free-audit page / live demo", "ask_level": "medium"}
+  ],
+
+  "offer": {
+    "free_entry": "Free audit (promo code) at https://clickcatalyst.digital/free-audit — 13 audit types available",
+    "standalone_pdf_price": "$29 per report",
+    "saas": {
+      "starter": "$0/mo — 1 connection, screen-only (no PDF download)",
+      "pro": "$103/mo annual ($208 monthly) — up to 10 connections, 3 branded PDFs/mo. Target: small agencies (5-10 clients)",
+      "business": "$208/mo annual ($416 monthly) — up to 50 connections, unlimited white-label PDFs. Target: scaling agencies (10-50+ clients)"
+    },
+    "founding_agency_program": "50% off year one (locked at signup), then 25% off ongoing. First 100 agencies only. SAVED FOR THE REPLY, not the cold email.",
+    "cold_email_offer": "Free Efficiency & Waste audit on ONE of their client accounts, delivered via a promo code sent when they reply. No link in the cold email — the CTA is a reply."
+  },
+
+  "tone": {
+    "style": "problem-first, conversational, understated, peer-to-peer (founder to agency owner)",
+    "avoid": ["hype words (revolutionary, AI-powered, 10x)", "category language (observability/diagnostic) in the cold open", "assumed-not-observed claims", "multiple CTAs", "long paragraphs"],
+    "length_target_words": 90
+  },
+
+  "personalization_signals": {
+    "_note": "Per-lead data captured at enrich — the generator builds ONE observed sentence so each email feels researched, not mass-sent.",
+    "available": ["org keywords (e.g. ecommerce/fashion focus)", "tech stack (GTM, marketing automation)", "confirmed Google Ads pixel", "employee count / size band", "city/state"]
+  },
+
+  "compliance": {
+    "from_name": "Pujan from ClickCatalyst",
+    "postal_address": "FILL: full real company address (street/area, Ahmedabad, Gujarat, India) — CAN-SPAM requires it",
+    "unsubscribe": true
+  }
+}
