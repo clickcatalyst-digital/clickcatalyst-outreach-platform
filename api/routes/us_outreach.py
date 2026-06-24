@@ -8,10 +8,13 @@ from us_lead_engine import orchestrator, sender
 from us_lead_engine.orchestrator import _conn, get_config, set_config
 
 # Ensure the orchestrator tables exist on API startup (idempotent, quiet).
-try:
-    orchestrator.ensure_tables()
-except Exception as _e:  # pragma: no cover
-    print(f"[us_outreach] ensure_tables failed: {_e}")
+import os
+
+if os.getenv("RUN_US_ENGINE", "false").lower() == "true":
+    try:
+        orchestrator.ensure_tables()
+    except Exception as _e:
+        print(f"[us_outreach] ensure_tables failed: {_e}")
 
 router = APIRouter()
 
