@@ -11,7 +11,7 @@ export default function CampaignsPage() {
   const [selected, setSelected]   = useState(null)
   const [preview, setPreview]     = useState(null)
   const [saved, setSaved]         = useState(false)
-  const [country, setCountry]     = useState('india')
+  const [country, setCountry]     = useState('us')
 
   useEffect(() => {
     setCountry(getCountry())

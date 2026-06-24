@@ -31,7 +31,7 @@ const NAV = [
 export default function RootLayout({ children }) {
   const path = usePathname()
   const [dark, setDark] = useState(false)
-  const [country, setC] = useState('india')
+  const [country, setC] = useState('us')
 
   useEffect(() => { setC(getCountry()) }, [])
 

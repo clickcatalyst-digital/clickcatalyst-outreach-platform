@@ -32,8 +32,8 @@ export async function apiFetch(path, options = {}) {
 
 // Global country scope (India = MCA pipeline, US = Apollo pipeline).
 export function getCountry() {
-  if (typeof window === 'undefined') return 'india'
-  return localStorage.getItem('cc_country') || 'india'
+  if (typeof window === 'undefined') return 'us'
+  return localStorage.getItem('cc_country') || 'us'
 }
 
 export function setCountry(c) {

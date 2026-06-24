@@ -3,8 +3,18 @@
 from fastapi import APIRouter, Query
 from typing import Optional
 from ..database import get_conn
+import db_factory
 
 router = APIRouter()
+
+
+def _india_unavailable() -> bool:
+    """India leads come from vw_qualified_leads — a view over company_data +
+    nic_master (the 814MB MCA dataset that lives only on the local Mac, not in
+    Turso). When running against Turso (Render), India-specific endpoints return
+    empty results instead of 500-ing on the missing view. US (Apollo) leads come
+    from company_enrichment and are unaffected."""
+    return db_factory.using_turso()
 
 
 @router.get("/")
@@ -49,6 +59,11 @@ def get_leads(
         total = cursor.fetchone()[0]
         conn.close()
         return {"leads": leads, "total": total, "page": page, "limit": limit}
+
+    # India path needs vw_qualified_leads (local-only). Empty on Turso/Render.
+    if _india_unavailable():
+        conn.close()
+        return {"leads": [], "total": 0, "page": page, "limit": limit}
 
     where  = ["1=1"]
     params = []
@@ -108,6 +123,9 @@ def get_leads(
 
 @router.get("/segments")
 def get_segments():
+    # Segments are derived from vw_qualified_leads (India-only, local). Empty on Turso.
+    if _india_unavailable():
+        return []
     conn = get_conn()
     cursor = conn.cursor()
     cursor.execute("""
@@ -156,6 +174,10 @@ def get_lead_detail(cin: str):
             WHERE e.CIN = ?
         """, (cin,))
     else:
+        # India lead detail needs vw_qualified_leads (local-only). Not found on Turso.
+        if _india_unavailable():
+            conn.close()
+            return {"error": "Lead not found"}
         cursor.execute("""
             SELECT
                 q.CIN, q.CompanyName, q.ICP_Segment, q.State,
@@ -225,6 +247,9 @@ def update_website(cin: str, body: dict):
 @router.get("/queue/next")
 def get_next_in_queue(offset: int = 0):
     """Returns the next Intelligence_Ready lead without contacts."""
+    # Queue is driven by vw_qualified_leads (India-only, local). Empty on Turso.
+    if _india_unavailable():
+        return {"lead": None, "total": 0, "offset": offset}
     conn = get_conn()
     cursor = conn.cursor()
 

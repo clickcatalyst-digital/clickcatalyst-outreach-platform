@@ -15,7 +15,7 @@ const EMAIL_LABELS = ['Work', 'Personal', 'Founder', 'Marketing', 'Info / Generi
 
 export default function ContactsPage() {
   const [tab, setTab] = useState('queue')
-  const [country, setCountry] = useState('india')
+  const [country, setCountry] = useState('us')
 
   useEffect(() => {
     setCountry(getCountry())

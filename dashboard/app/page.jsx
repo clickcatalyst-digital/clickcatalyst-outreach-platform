@@ -16,7 +16,7 @@ export default function HomePage() {
   const [status, setStatus]       = useState(null)
   const [overview, setOverview]   = useState(null)
   const [sched, setSched]         = useState(null)
-  const [country, setCountry]     = useState('india')
+  const [country, setCountry]     = useState('us')
 
   useEffect(() => {
     setCountry(getCountry())

@@ -18,7 +18,7 @@ export default function AnalyticsPage() {
   const [abTests, setAbTests]   = useState([])
   const [scheduler, setScheduler] = useState(null)
   const [bayesian, setBayesian]   = useState(null)
-  const [country, setCountry]     = useState('india')
+  const [country, setCountry]     = useState('us')
 
   useEffect(() => {
     setCountry(getCountry())

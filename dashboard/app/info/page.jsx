@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { getCountry } from '../lib/api'
 
 export default function InfoPage() {
-  const [country, setCountry] = useState('india')
+  const [country, setCountry] = useState('us')
   useEffect(() => {
     setCountry(getCountry())
     const on = () => setCountry(getCountry())

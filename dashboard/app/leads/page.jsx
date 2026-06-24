@@ -25,7 +25,7 @@ export default function LeadsPage() {
   const [segments, setSegments] = useState([])
   const [statuses, setStatuses] = useState([])
   const [selected, setSelected] = useState(null)
-  const [country, setCountry]   = useState('india')
+  const [country, setCountry]   = useState('us')
   const limit = 50
 
   useEffect(() => {
