@@ -5,7 +5,9 @@ import { useState, useEffect } from 'react'
 import { Search, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCountry } from '../lib/api'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+const API = process.env.NEXT_PUBLIC_API_URL
+  || (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'http://localhost:8000/api' : '/api')
 
 const STATUS_COLORS = {
   'Enriched_Ready':     { background: 'var(--blue-soft)',   color: 'var(--blue)' },

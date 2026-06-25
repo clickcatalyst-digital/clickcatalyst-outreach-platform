@@ -3,7 +3,11 @@
 // Shared fetch wrapper for the ops dashboard.
 // Shows connection status instead of crashing on failed fetches.
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+// Explicit override wins; else localhost dev -> local FastAPI, any deployed host
+// -> same-origin Next route handlers (works even if NEXT_PUBLIC_API_URL is unset).
+const API = process.env.NEXT_PUBLIC_API_URL
+  || (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'http://localhost:8000/api' : '/api')
 
 let _toastCallback = null
 

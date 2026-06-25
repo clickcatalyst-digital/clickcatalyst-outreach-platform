@@ -5,7 +5,9 @@ import { useState, useEffect, useRef } from 'react'
 import { Play, Square, RefreshCw } from 'lucide-react'
 import QueuePanel from '../components/QueuePanel'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+const API = process.env.NEXT_PUBLIC_API_URL
+  || (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'http://localhost:8000/api' : '/api')
 
 const STAGES = [
   { id: 1, name: 'Domain Finder',       file: 'domain_extractor_01.py',  color: '#2563eb' },
