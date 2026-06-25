@@ -14,6 +14,9 @@ export async function GET(req) {
   const where = ["e.Lead_Source = 'US_Apollo'"]
   const params = []
   if (status) { where.push('e.Pipeline_Status = ?'); params.push(status) }
+  const emailed = sp.get('emailed')
+  if (emailed === 'true') where.push('e.Email_Sent_Date IS NOT NULL')
+  else if (emailed === 'false') where.push('e.Email_Sent_Date IS NULL')
   if (search) { where.push('(e.Company_Name LIKE ? OR e.CIN LIKE ?)'); params.push(`%${search}%`, `%${search}%`) }
   const wc = where.join(' AND ')
 

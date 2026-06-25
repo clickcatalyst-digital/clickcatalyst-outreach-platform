@@ -24,6 +24,7 @@ export default function LeadsPage() {
   const [search, setSearch]     = useState('')
   const [segment, setSegment]   = useState('')
   const [status, setStatus]     = useState('')
+  const [emailed, setEmailed]   = useState('')
   const [segments, setSegments] = useState([])
   const [statuses, setStatuses] = useState([])
   const [selected, setSelected] = useState(null)
@@ -42,7 +43,7 @@ export default function LeadsPage() {
     fetch(`${API}/leads/statuses`).then(r => r.json()).then(setStatuses).catch(() => {})
   }, [])
 
-  useEffect(() => { fetchLeads() }, [page, search, segment, status, country])
+  useEffect(() => { fetchLeads() }, [page, search, segment, status, emailed, country])
 
   async function fetchLeads() {
     try {
@@ -51,6 +52,7 @@ export default function LeadsPage() {
         ...(search  && { search }),
         ...(segment && { segment }),
         ...(status  && { status }),
+        ...(emailed && { emailed }),
         ...(country === 'us' && { country: 'us' }),
       })
       const r = await fetch(`${API}/leads?${params}`)
@@ -70,10 +72,10 @@ export default function LeadsPage() {
   const pages = Math.ceil(total / limit)
 
   return (
-    <div className="page-enter" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div className="page-enter cc-twopane" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
       {/* ── LIST ── */}
-      <div style={{
+      <div className="cc-pane-list" style={{
         flex: 1, display: 'flex', flexDirection: 'column',
         borderRight: '1px solid var(--border)', overflow: 'hidden'
       }}>
@@ -122,15 +124,21 @@ export default function LeadsPage() {
                 </option>
               ))}
             </select>
+            <select value={emailed} onChange={e => { setEmailed(e.target.value); setPage(1) }}
+              style={selectStyle}>
+              <option value="">All leads</option>
+              <option value="true">Emailed</option>
+              <option value="false">Never emailed</option>
+            </select>
           </div>
         </div>
 
         {/* Table */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <table className="cc-cardtable" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead style={{ position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1 }}>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Company', 'State', 'Capital', 'Pixel', 'Status', 'Contacts'].map(h => (
+                {['Company', 'State', 'Capital', 'Pixel', 'Status', 'Emailed', 'Contacts'].map(h => (
                   <th key={h} style={{
                     padding: '10px 14px', textAlign: 'left',
                     color: 'var(--muted)', fontWeight: 500, fontSize: 11
@@ -148,22 +156,22 @@ export default function LeadsPage() {
                     background: selected?.lead?.CIN === l.CIN ? 'var(--bg)' : 'transparent',
                     transition: 'background 0.1s ease'
                   }}>
-                  <td style={{ padding: '10px 14px' }}>
+                  <td data-label="Company" style={{ padding: '10px 14px' }}>
                     <div style={{ fontWeight: 500 }}>{l.CompanyName}</div>
                     <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: 'var(--muted)', marginTop: 1 }}>
                       {l.CIN}
                     </div>
                   </td>
-                  <td style={{ padding: '10px 14px', color: 'var(--muted)' }}>{l.State || '—'}</td>
-                  <td style={{ padding: '10px 14px', fontFamily: 'DM Mono, monospace' }}>
+                  <td data-label="State" style={{ padding: '10px 14px', color: 'var(--muted)' }}>{l.State || '—'}</td>
+                  <td data-label="Capital" style={{ padding: '10px 14px', fontFamily: 'DM Mono, monospace' }}>
                     {l.PaidupCapital != null ? `₹${(+l.PaidupCapital / 100000).toFixed(1)}L` : '—'}
                   </td>
-                  <td style={{ padding: '10px 14px' }}>
+                  <td data-label="Pixel" style={{ padding: '10px 14px' }}>
                     {l.Has_Google_Ads_Pixel === 1 ? '✅'
                    : l.Has_Google_Ads_Pixel === 0 ? '❌'
                    : <span style={{ color: 'var(--muted)' }}>—</span>}
                   </td>
-                  <td style={{ padding: '10px 14px' }}>
+                  <td data-label="Status" style={{ padding: '10px 14px' }}>
                     {l.Pipeline_Status ? (
                       <span style={{
                         padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 500,
@@ -171,7 +179,12 @@ export default function LeadsPage() {
                       }}>{l.Pipeline_Status}</span>
                     ) : <span style={{ color: 'var(--muted)' }}>—</span>}
                   </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                  <td data-label="Emailed" style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
+                    {l.Email_Sent_Date
+                      ? <span style={{ color: 'var(--green)', fontWeight: 500 }}>✓ {l.Email_Sent_Date}</span>
+                      : <span style={{ color: 'var(--muted)' }}>—</span>}
+                  </td>
+                  <td data-label="Contacts" style={{ padding: '10px 14px', textAlign: 'center' }}>
                     {l.Contact_Count > 0
                       ? <span style={{ color: 'var(--green)', fontWeight: 500 }}>{l.Contact_Count}</span>
                       : <span style={{ color: 'var(--muted)' }}>0</span>}
@@ -203,7 +216,7 @@ export default function LeadsPage() {
       </div>
 
       {/* ── DETAIL PANEL ── */}
-      <div style={{
+      <div className={`cc-pane-detail ${selected ? 'cc-open' : ''}`} style={{
         width: 380, flexShrink: 0,
         overflow: 'auto', padding: 28,
         background: 'var(--surface)'
@@ -213,7 +226,13 @@ export default function LeadsPage() {
             Select a lead to view details
           </div>
         ) : (
-          <LeadDetail data={selected} onRefresh={() => selectLead(selected.lead.CIN)} />
+          <>
+            <button onClick={() => setSelected(null)} className="cc-mobile-only" style={{
+              marginBottom: 14, background: 'none', border: '1px solid var(--border)',
+              borderRadius: 8, padding: '6px 12px', color: 'var(--text)', cursor: 'pointer', fontSize: 13
+            }}>← Back to list</button>
+            <LeadDetail data={selected} onRefresh={() => selectLead(selected.lead.CIN)} />
+          </>
         )}
       </div>
     </div>

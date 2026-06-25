@@ -116,3 +116,48 @@ input:focus, select:focus, textarea:focus {
 .page-enter {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* ── Mobile operations-console layer. Desktop (>768px) unchanged. ── */
+@media (max-width: 768px) {
+  .cc-page { padding: 18px 14px !important; max-width: 100% !important; }
+
+  /* any multi-column grid collapses to a readable count */
+  .cc-grid-auto { grid-template-columns: 1fr 1fr !important; }
+  .cc-grid-1 { grid-template-columns: 1fr !important; }
+
+  /* funnel wraps instead of forcing horizontal scroll */
+  .cc-funnel { flex-wrap: wrap !important; gap: 6px !important; overflow-x: visible !important; }
+
+  /* label+value rows stack (US Outreach schedule) */
+  .cc-row-stack { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
+  .cc-row-stack > :first-child { width: auto !important; flex: none !important; }
+
+  /* two-pane (list + detail) -> detail becomes a full-screen slide-in drawer */
+  .cc-twopane { display: block !important; height: auto !important; overflow: visible !important; }
+  .cc-pane-list { width: 100% !important; border-right: none !important; }
+  .cc-pane-detail {
+    position: fixed !important; inset: 0 !important; z-index: 90 !important;
+    width: 100% !important; max-width: 100% !important;
+    transform: translateX(100%); transition: transform 0.25s ease;
+    background: var(--bg); overflow-y: auto;
+  }
+  .cc-pane-detail.cc-open { transform: translateX(0); }
+
+  /* tables -> stacked cards (each row a card, no horizontal scroll). tds need data-label. */
+  .cc-cardtable thead { display: none !important; }
+  .cc-cardtable tr {
+    display: block !important; border: 1px solid var(--border) !important;
+    border-radius: 10px; margin: 0 0 8px; padding: 4px 0; background: var(--surface);
+  }
+  .cc-cardtable td {
+    display: flex !important; justify-content: space-between; align-items: center;
+    gap: 12px; padding: 7px 12px !important; text-align: right !important; border: none !important;
+  }
+  .cc-cardtable td::before {
+    content: attr(data-label); color: var(--muted); font-weight: 500;
+    text-align: left; font-size: 11px;
+  }
+  .cc-mobile-only { display: inline-block !important; }
+}
+
+.cc-mobile-only { display: none; }

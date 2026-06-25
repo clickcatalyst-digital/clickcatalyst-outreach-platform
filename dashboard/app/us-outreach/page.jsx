@@ -82,7 +82,7 @@ export default function USOutreachPage() {
   const hb = heartbeat(s.last_cycle_at, s.cycle_minutes)
 
   return (
-    <div style={{ padding: '40px 44px', maxWidth: 880, margin: '0 auto' }}>
+    <div className="cc-page" style={{ padding: '40px 44px', maxWidth: 880, margin: '0 auto' }}>
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
@@ -155,7 +155,7 @@ export default function USOutreachPage() {
 
       {/* ── Status ── */}
       <Section label="Live status">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
+        <div className="cc-grid-auto" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
           <Stat label="State" value={s.before_start ? `Starts ${s.start_date}` : s.in_window ? 'In window' : 'Idle'}
             sub={s.before_start ? '' : s.window_reason} />
           <Stat label="Warmup day" value={s.warmup_day} sub={`limit ${s.daily_limit}/day`} />
@@ -273,7 +273,7 @@ function Card({ children, style }) {
 }
 function Row({ label, children, last }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 0', borderBottom: last ? 'none' : '1px solid var(--border)' }}>
+    <div className="cc-row-stack" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 0', borderBottom: last ? 'none' : '1px solid var(--border)' }}>
       <div style={{ fontSize: 12.5, color: 'var(--muted)', width: 150, flexShrink: 0 }}>{label}</div>
       {children}
     </div>

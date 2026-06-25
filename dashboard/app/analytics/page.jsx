@@ -56,16 +56,23 @@ export default function AnalyticsPage() {
   ] : []
 
   return (
-    <div className="page-enter" style={{ padding: '36px 44px' }}>
+    <div className="page-enter cc-page" style={{ padding: '36px 44px' }}>
       <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 4, letterSpacing: '-0.01em' }}>
         Analytics
       </h1>
-      <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 32 }}>
+      <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 16 }}>
         Campaign performance across all batches and variants.
       </p>
 
+      {overview && (
+        <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginBottom: 28, fontSize: 12.5, color: 'var(--muted)' }}>
+          <span><strong style={{ color: 'var(--text)' }}>Production</strong> · {overview.total_sent} sends</span>
+          <span><strong style={{ color: 'var(--text)' }}>Testing</strong> · {overview.test_sent ?? 0} sends excluded{overview.last_test_at ? ` · last ${overview.last_test_at}` : ''}</span>
+        </div>
+      )}
+
       {/* Metric cards */}
-      <div style={{
+      <div className="cc-grid-auto" style={{
         display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)',
         gap: 10, marginBottom: 36
       }}>
