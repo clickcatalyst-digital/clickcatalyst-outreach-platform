@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "verify": "node scripts/verify.mjs",
+    "doctor": "node scripts/doctor.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
