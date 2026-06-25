@@ -7,12 +7,28 @@ import { createClient } from '@libsql/client'
 
 let _client = null
 
+// Tolerate stray whitespace and accidental surrounding quotes from the Render UI.
+function cleanEnv(v) {
+  if (!v) return undefined
+  const s = v.trim().replace(/^["']|["']$/g, '').trim()
+  return s || undefined
+}
+
+export function tursoUrl() {
+  return cleanEnv(process.env.TURSO_URL)
+    || cleanEnv(process.env.TURSO_DATABASE_URL)
+    || cleanEnv(process.env.LIBSQL_URL)
+}
+
+export function tursoToken() {
+  return cleanEnv(process.env.TURSO_AUTH_TOKEN) || cleanEnv(process.env.TURSO_TOKEN)
+}
+
 export function turso() {
   if (!_client) {
-    const url = process.env.TURSO_URL || process.env.TURSO_DATABASE_URL
-    const authToken = process.env.TURSO_AUTH_TOKEN
-    if (!url) throw new Error('TURSO_URL (or TURSO_DATABASE_URL) is not set')
-    _client = createClient({ url, authToken })
+    const url = tursoUrl()
+    if (!url) throw new Error('TURSO_URL is not set')
+    _client = createClient({ url, authToken: tursoToken() })
   }
   return _client
 }
