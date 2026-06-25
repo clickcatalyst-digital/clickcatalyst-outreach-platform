@@ -59,12 +59,24 @@ def get_gmail_service():
         creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
 
     if not creds or not creds.valid:
+        refreshed = False
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+                refreshed = True
+            except Exception as e:
+                # Refresh token revoked/expired (invalid_grant) — drop it and re-auth.
+                print(f"   ⚠ Gmail token refresh failed ({e}); re-authentication required.")
+                creds = None
+
+        if not refreshed and not (creds and creds.valid):
             if not os.path.exists(CREDENTIALS_FILE):
                 print(f"❌ {CREDENTIALS_FILE} not found.")
                 print("   Download OAuth2 credentials from Google Cloud Console.")
+                sys.exit(1)
+            # Don't block the launchd daemon on an interactive browser flow.
+            if not sys.stdin.isatty():
+                print("❌ Gmail re-auth needed. Run `python reply_tracker.py` in a terminal to re-authenticate.")
                 sys.exit(1)
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
