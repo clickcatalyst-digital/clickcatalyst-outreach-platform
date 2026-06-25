@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { getCountry, setCountry, API } from './lib/api'
 import {
-  Zap, Search, Users, Mail, BarChart2, Activity, Phone, Compass, Radar, BookOpen
+  Zap, Search, Users, Mail, BarChart2, Activity, Phone, Compass, Radar, BookOpen, Menu, X
 } from 'lucide-react'
 
 // Hosted build is US-only (India/Places/Pipeline are local-only); local dev keeps both.
@@ -59,6 +59,7 @@ export default function RootLayout({ children }) {
   }
 
   const [apiDown, setApiDown] = useState(false)
+  const [navOpen, setNavOpen] = useState(false)
 
   useEffect(() => {
     fetch(`${API}/health`)
@@ -70,8 +71,14 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body style={{ display: 'flex', minHeight: '100vh' }}>
 
+        {/* Mobile hamburger + overlay — CSS-hidden on desktop (>768px) */}
+        <button className="cc-hamburger" aria-label="Toggle menu" onClick={() => setNavOpen(o => !o)}>
+          {navOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+        <div className={`cc-overlay ${navOpen ? 'cc-open' : ''}`} onClick={() => setNavOpen(false)} />
+
         {/* ── SIDEBAR ── */}
-        <aside style={{
+        <aside className={`cc-sidebar ${navOpen ? 'cc-open' : ''}`} style={{
           width: 220, flexShrink: 0,
           background: 'var(--surface)',
           borderRight: '1px solid var(--border)',
@@ -112,7 +119,7 @@ export default function RootLayout({ children }) {
             {NAV.filter(n => !n.only || n.only === country).map(({ href, label, icon: Icon }) => {
               const active = href === '/' ? path === '/' : path.startsWith(href)
               return (
-                <Link key={href} href={href} style={{
+                <Link key={href} href={href} onClick={() => setNavOpen(false)} style={{
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '10px 12px', borderRadius: 8,
                   marginBottom: 2, textDecoration: 'none',
