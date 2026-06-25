@@ -66,10 +66,10 @@ export default function CampaignsPage() {
   }, {})
 
   return (
-    <div className="page-enter" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div className="page-enter cc-twopane" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
       {/* ── TEMPLATE LIST ── */}
-      <div style={{
+      <div className="cc-pane-list" style={{
         width: 280, flexShrink: 0,
         borderRight: '1px solid var(--border)',
         overflow: 'auto', padding: '28px 0',
@@ -110,13 +110,17 @@ export default function CampaignsPage() {
       </div>
 
       {/* ── EDITOR ── */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '36px 40px' }}>
+      <div className={`cc-pane-detail ${selected ? 'cc-open' : ''}`} style={{ flex: 1, overflow: 'auto', padding: '36px 40px' }}>
         {!selected ? (
           <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 80, textAlign: 'center' }}>
             Select a template to edit
           </div>
         ) : (
           <div style={{ maxWidth: 800 }}>
+            <button onClick={() => setSelected(null)} className="cc-mobile-only" style={{
+              marginBottom: 14, background: 'none', border: '1px solid var(--border)',
+              borderRadius: 8, padding: '6px 12px', color: 'var(--text)', cursor: 'pointer', fontSize: 13
+            }}>← Back to templates</button>
             <div style={{
               display: 'flex', justifyContent: 'space-between',
               alignItems: 'center', marginBottom: 28

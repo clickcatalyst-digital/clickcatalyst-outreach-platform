@@ -9,6 +9,17 @@ const API = process.env.NEXT_PUBLIC_API_URL
   || (typeof window !== 'undefined' && window.location.hostname === 'localhost'
         ? 'http://localhost:8000/api' : '/api')
 
+// Operational stage for a US contact, derived from its Turso fields.
+function contactStage(c) {
+  if (c.Replies > 0) return ['Replied', '#30a46c', 'var(--green-soft)']
+  if (c.Opens > 0 || c.Clicks > 0) return ['Opened', '#2563eb', 'var(--blue-soft)']
+  if (c.Email_Sent_Date) return ['Sent', '#30a46c', 'var(--green-soft)']
+  if (c.Pipeline_Status === 'Intelligence_Ready') return ['Ready', '#2563eb', 'var(--blue-soft)']
+  if (!c.Website_URL) return ['Waiting website', '#d6a100', '#d6a10018']
+  if (c.Is_Primary_Contact) return ['Qualified', 'var(--muted)', 'var(--bg)']
+  return ['Generated', 'var(--muted)', 'var(--bg)']
+}
+
 const JOB_TITLES = [
   'Founder', 'Co-Founder', 'CEO', 'CMO', 'Head of Marketing',
   'VP Marketing', 'Growth Lead', 'Digital Marketing Manager', 'Director', 'Other'
@@ -273,7 +284,7 @@ function USContactsView() {
       </div>
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <table className="cc-cardtable" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
               {['Contact', 'Title', 'Company', 'Pixel', 'Engagement', 'Status'].map(h => (
@@ -287,26 +298,24 @@ function USContactsView() {
                 <tr onClick={() => setExpanded(expanded === c.Contact_ID ? null : c.Contact_ID)}
                   style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer',
                     background: expanded === c.Contact_ID ? 'var(--bg)' : 'transparent' }}>
-                  <td style={{ padding: '10px 14px', fontWeight: 500 }}>
+                  <td data-label="Contact" style={{ padding: '10px 14px', fontWeight: 500 }}>
                     {c.Is_Primary_Contact ? '⭐ ' : ''}{c.Full_Name}
                     <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: 'var(--muted)' }}>{c.Email_Address}</div>
                   </td>
-                  <td style={{ padding: '10px 14px', color: 'var(--muted)' }}>{c.Job_Title || '—'}</td>
-                  <td style={{ padding: '10px 14px' }}>{c.Company_Name}</td>
-                  <td style={{ padding: '10px 14px' }}>{c.Has_Google_Ads_Pixel === 1 ? '✅' : c.Has_Google_Ads_Pixel === 0 ? '❌' : <span style={{ color: 'var(--muted)' }}>—</span>}</td>
-                  <td style={{ padding: '10px 14px' }}>
+                  <td data-label="Title" style={{ padding: '10px 14px', color: 'var(--muted)' }}>{c.Job_Title || '—'}</td>
+                  <td data-label="Company" style={{ padding: '10px 14px' }}>{c.Company_Name}</td>
+                  <td data-label="Pixel" style={{ padding: '10px 14px' }}>{c.Has_Google_Ads_Pixel === 1 ? '✅' : c.Has_Google_Ads_Pixel === 0 ? '❌' : <span style={{ color: 'var(--muted)' }}>—</span>}</td>
+                  <td data-label="Engagement" style={{ padding: '10px 14px' }}>
                     <div style={{ display: 'flex', gap: 10, color: 'var(--muted)', fontSize: 11, alignItems: 'center' }}>
                       <span title="opens" style={{ display: 'flex', gap: 3, alignItems: 'center', color: c.Opens > 0 ? 'var(--green)' : 'var(--muted)' }}><Eye size={12} />{c.Opens}</span>
                       <span title="clicks" style={{ display: 'flex', gap: 3, alignItems: 'center', color: c.Clicks > 0 ? 'var(--blue)' : 'var(--muted)' }}><MousePointerClick size={12} />{c.Clicks}</span>
                       <span title="replies" style={{ display: 'flex', gap: 3, alignItems: 'center', color: c.Replies > 0 ? 'var(--green)' : 'var(--muted)', fontWeight: c.Replies > 0 ? 600 : 400 }}><Reply size={12} />{c.Replies}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '10px 14px' }}>
-                    <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 500,
-                      background: c.Email_Sent_Date ? 'var(--green-soft)' : 'var(--blue-soft)',
-                      color: c.Email_Sent_Date ? 'var(--green)' : 'var(--blue)' }}>
-                      {c.Email_Sent_Date ? 'Sent' : (c.Pipeline_Status || '—')}
-                    </span>
+                  <td data-label="Status" style={{ padding: '10px 14px' }}>
+                    {(() => { const [lbl, fg, bg] = contactStage(c); return (
+                      <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 500, background: bg, color: fg }}>{lbl}</span>
+                    ) })()}
                   </td>
                 </tr>
                 {expanded === c.Contact_ID && (
