@@ -25,7 +25,7 @@ export async function apiFetch(path, options = {}) {
     }
     return await r.json()
   } catch (e) {
-    showError('Backend not reachable — start FastAPI server on port 8000')
+    showError('Request failed — the dashboard could not reach its data backend')
     return null
   }
 }

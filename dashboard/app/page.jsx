@@ -269,7 +269,7 @@ export default function HomePage() {
         textAlign: 'center', fontSize: 10, color: 'var(--muted)',
         fontFamily: 'DM Mono, monospace', paddingBottom: 16
       }}>
-        ClickCatalyst Ops · localhost:8000
+        ClickCatalyst Ops
       </div>
     </div>
   )

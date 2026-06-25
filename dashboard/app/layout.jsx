@@ -153,7 +153,7 @@ export default function RootLayout({ children }) {
               borderBottom: '1px solid var(--accent)',
               display: 'flex', alignItems: 'center', gap: 8
             }}>
-              ⚠ Backend not reachable — start FastAPI server: uvicorn api.main:app --reload --port 8000
+              ⚠ Database not reachable — check the Turso connection (TURSO_URL / TURSO_AUTH_TOKEN)
             </div>
           )}
           {children}
