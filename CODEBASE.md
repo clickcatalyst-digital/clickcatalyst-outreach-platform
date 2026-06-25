@@ -12,6 +12,32 @@
 **Brand URL**: `clickcatalyst.digital`  
 **Sender**: `Pujan from ClickCatalyst` / `pujan@clickcatalyst.digital`
 
+> **Strategic pivot (2026-06):** active outreach is now **US digital agencies sourced via Apollo** (`us_lead_engine/`). The original India MCA pipeline (documented below) is **frozen / local-only** — its ~814 MB MCA tables (`company_data`, `nic_master`, `vw_qualified_leads`) live only on the Mac and are intentionally NOT in Turso.
+
+---
+
+## Current Architecture & Operations (updated 2026-06-25)
+
+**Mac executes · Turso is shared state · Render shows it:**
+```
+Render (Next.js dashboard, US-only) ──read/write──► Turso ◄──read/write── Mac (workers + launchd + local FastAPI)
+                                                      │
+                                          Apollo · Gmail · Firestore tracking
+```
+- **Turso** (`libsql://cat-mail-db-pujan.aws-ap-south-1.turso.io`) is the single shared DB. `db_factory.connect()` → Turso when `TURSO_URL`+`TURSO_AUTH_TOKEN` are set, else local SQLite. Driver: **`libsql`** (NOT libsql-client / pyturso). Workers route their MAIN-DB access through `db_factory` (`us_lead_engine/orchestrator.py`, `sender.py`, `sync_outreach_tracking.py`, `reply_tracker.py`, `bayesian_engine.py`). The `us_leads.db` Apollo corpus + India scripts stay raw-`sqlite3` / local.
+- **Mac** runs all execution: US engine + tracking sync + reply tracker, plus a **local-only FastAPI** (`api/` — the "power tool": full India/Places/execution; never deployed). Two launchd jobs (`scripts/*.plist`, installed in `~/Library/LaunchAgents`):
+  - `com.clickcatalyst.heartbeat` (60s) → `heartbeat.py` upserts `mac_heartbeat` in Turso (liveness).
+  - `com.clickcatalyst.us` (20 min) → `scripts/tick.sh` runs orchestrator + sync + replies + `command_worker.py` once each (resilient; `RunAtLoad`).
+- **Render** hosts ONLY the Next.js dashboard (`dashboard/`), **US-only** (`NEXT_PUBLIC_HOSTED=true`), behind **Basic Auth** (`dashboard/middleware.js`). It reaches Turso through **server-side Next.js route handlers** in `dashboard/app/api/**` (`@libsql/client`, token in server env) — NOT FastAPI. Client API base resolves at runtime (`NEXT_PUBLIC_API_URL` → else localhost⇒FastAPI / deployed⇒`/api`).
+- **Command queue:** the hosted dashboard can't execute on the Mac, so "Run cycle now" / "Discover" insert a `command_queue` (or pending `discover_jobs`) row in Turso; `command_worker.py` (run by `tick.sh`) drains and executes them.
+- **Observability:** `/api/system-health` aggregates heartbeats + funnel; `/system` page = green/red board; `npm run verify` (endpoint availability) + `npm run doctor` (business-pipeline board). Funnel: Generated→Qualified→Ready→Sent→Opened→Clicked→Replied.
+
+**New Turso tables (beyond the originals):** `mac_heartbeat`, `command_queue`, `bayesian_state` (deliverability mirror), `us_scheduler_config` (US engine config incl. `last_cycle_at`, `corpus_remaining`, `reveals_this_month` snapshot), `us_alerts`, `us_test_emails`, `tracking_sync_heartbeat`.
+
+**Test vs prod isolation:** US test sends use `Batch_ID` prefix `ustest` and write ONLY `outreach_analytics` rows — they never set `company_enrichment.Email_Sent_Date` / `Pipeline_Status`. Every analytics query + the funnel exclude `Batch_ID LIKE 'ustest%'`, so test sends never pollute analytics.
+
+**Env vars (current):** `TURSO_URL`, `TURSO_AUTH_TOKEN` (Mac `.env` + Render); dashboard build: `NEXT_PUBLIC_API_URL=/api`, `NEXT_PUBLIC_HOSTED=true`, `BASIC_AUTH_USER`, `BASIC_AUTH_PASS`; workers: `DB_PATH`, `SENDER_EMAIL`/`SENDER_APP_PASS`, `OPENROUTER_API_KEY`, `FIREBASE_CREDENTIALS_PATH`, Gmail `credentials.json`/`token.json`.
+
 ---
 
 ## Database
@@ -521,13 +547,16 @@ Separate from the MCA scatter-plot engine (which is hardwired to `vw_qualified_l
 ### Status (as of 2026-06-20)
 **Working & verified:** discover→qualify→reveal→pixel→export→A/B send→orchestrator (scheduled Mon 06-22, deliverability-gated volume, auto-replenish w/ pagination, send-time auto-learning past 150 sends) → control-tower UI (test/prod toggle, schedule controls, heartbeat) → alerts (deliverability, bounce, corpus, credit-cap, apollo, tracking_sync, smtp, replies). **Open-tracking pipeline CONFIRMED LIVE** (prod endpoint + Firestore + `sync_outreach_tracking.py` — processed 7 opens). Country dropdown scopes whole dashboard. Gemma summarization + contact Notes/analytics built. Gmail is the sender, sending stays on the Mac.
 
+### Status (2026-06-25) — autonomous cloud loop live
+The 2026-06-20 "cloud migration" (future work #1 below) is **DONE**: Turso is the shared DB, the Next.js dashboard runs on Render (US-only, Basic Auth, server-side Turso route handlers), workers write Turso, FastAPI stays local. The US engine is **autonomous** — `com.clickcatalyst.us` is loaded and ticking every 20 min; verified end-to-end (dashboard config write → orchestrator reads it next cycle → sends → writes Turso → dashboard reflects). Currently in **TEST mode** (5 test inboxes); flip Mode→Prod on the US Outreach page to go live. **Open-tracking live.** **Reply tracking paused** — Gmail refresh token revoked; re-auth via `python reply_tracker.py` (the code now self-heals instead of crashing).
+
 ### Immediate manual steps (user)
 - **Gmail OAuth for replies:** Google Cloud → enable Gmail API → create OAuth Desktop client → save `credentials.json` at project root → `python reply_tracker.py` once (writes `token.json`). Unblocks reply detection + auto-summaries + green alert.
 - Set `OPENROUTER_API_KEY` to activate Gemma summaries.
 - Keep `sync_outreach_tracking.py --daemon` running (needs `FIREBASE_CREDENTIALS_PATH`).
 
 ### Future work (planned 2026-06-20, to do ~next)
-1. **Cloud migration — dashboard to Render + DB to Turso, cron stays on Mac.** Turso (hosted libSQL) holds the DB; FastAPI + Next.js dashboard deploy to Render (read Turso); the orchestrator/sender/sync/reply daemons keep running on the Mac (Gmail works from residential IP) writing to Turso. **Prereqs:** (a) DB connection factory routing all ~15 `sqlite3.connect` calls through one Turso-capable helper (env-gated, falls back to local) — foundational; (b) Turso provision + data migrate; (c) secret scrub before repo public + API auth; (d) Render deploy. Do NOT move sending off the Mac (Gmail/cloud-SMTP issues; GCP blocks SMTP).
+1. ✅ **DONE (2026-06-25) — Cloud migration: dashboard to Render + DB to Turso, cron stays on Mac.** Turso (hosted libSQL) holds the DB; FastAPI + Next.js dashboard deploy to Render (read Turso); the orchestrator/sender/sync/reply daemons keep running on the Mac (Gmail works from residential IP) writing to Turso. **Prereqs:** (a) DB connection factory routing all ~15 `sqlite3.connect` calls through one Turso-capable helper (env-gated, falls back to local) — foundational; (b) Turso provision + data migrate; (c) secret scrub before repo public + API auth; (d) Render deploy. Do NOT move sending off the Mac (Gmail/cloud-SMTP issues; GCP blocks SMTP).
 2. **Background cron + log rotation on Mac — BUILT.** `scripts/tick.sh` runs orchestrator + sync + reply ONCE each (resilient: one failing step doesn't stop the others), logs to dated `logs/<name>_YYYY-MM-DD.log`, prunes logs > 7 days. `scripts/com.clickcatalyst.us.plist` = launchd job running it every 20 min (`RunAtLoad` + 20-min interval → also self-heals crashes). Install: `cp scripts/com.clickcatalyst.us.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.clickcatalyst.us.plist`. Secrets load via python-dotenv inside the scripts (config.py / sync / reply call `load_dotenv()`); tick.sh only exports `FIREBASE_CREDENTIALS_PATH`. NOTE: reply_tracker Gmail token expires in OAuth "Testing" mode (~7 days) → publish the OAuth consent screen to Production, or re-auth (`rm token.json && python reply_tracker.py`).
 3. **Verify the waste-audit PDF (first impression).** It IS substantially built in `clickcatalyst/frontend`: `/free-google-ads-waste-audit` page, `api/free-audit/waste-summary/route.js` (BigQuery-backed, auth-gated, has a sample-data path), and react-pdf render components (`WasteSynthesisPDF`, `WasteHeatmapPDF`, etc.). **Not yet end-to-end verified** — generate one on the sample dataset or a real connected Google Ads account before sending outreach, since the free waste audit is the offer's first impression.
 4. Smaller: promo-code fulfillment process, separate warmed sending domain, pixel `unreachable` retry, richer (org-keyword) personalization, heart-icon for the heartbeat dot, reply-tracker health heartbeat.
