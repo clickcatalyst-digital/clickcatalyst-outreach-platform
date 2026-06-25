@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { getCountry, setCountry, API } from './lib/api'
 import {
-  Zap, Search, Users, Mail, BarChart2, Activity, Phone, Compass, Radar, BookOpen, Menu, X
+  Zap, Search, Users, Mail, BarChart2, Activity, Phone, Compass, Radar, BookOpen, Menu, X, Gauge
 } from 'lucide-react'
 
 // Hosted build is US-only (India/Places/Pipeline are local-only); local dev keeps both.
@@ -20,6 +20,7 @@ const COUNTRIES = process.env.NEXT_PUBLIC_HOSTED === 'true'
 
 const NAV = [
   { href: '/',            label: 'Home',         icon: Activity },
+  { href: '/system',      label: 'System',     icon: Gauge,     only: 'us' },
   { href: '/pipeline',    label: 'Pipeline',   icon: Zap,       only: 'india' },
   { href: '/discover',    label: 'Discover',   icon: Compass,   only: 'india' },
   { href: '/leads',       label: 'Leads',      icon: Search },

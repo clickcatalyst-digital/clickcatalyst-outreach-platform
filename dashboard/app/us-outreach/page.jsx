@@ -2,23 +2,27 @@
 
 import { useState, useEffect } from 'react'
 import { apiFetch } from '../lib/api'
+import Funnel from '../components/Funnel'
 
 const LEVEL = { red: '#e5484d', yellow: '#d6a100', green: '#30a46c' }
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export default function USOutreachPage() {
   const [s, setS] = useState(null)
+  const [funnel, setFunnel] = useState(null)
   const [emails, setEmails] = useState([])
   const [newEmail, setNewEmail] = useState('')
   const [busy, setBusy] = useState(false)
 
   async function load() {
-    const [st, te] = await Promise.all([
+    const [st, te, sh] = await Promise.all([
       apiFetch('/us-outreach/status'),
       apiFetch('/us-outreach/test-emails'),
+      apiFetch('/system-health'),
     ])
     if (st) setS(st)
     if (te) setEmails(te)
+    if (sh) setFunnel(sh.funnel)
   }
 
   useEffect(() => {
@@ -99,6 +103,13 @@ export default function USOutreachPage() {
           {hb.label}
         </div>
       </div>
+
+      {/* ── Funnel ── */}
+      {funnel && (
+        <div style={{ marginBottom: 22 }}>
+          <Funnel f={funnel} />
+        </div>
+      )}
 
       {/* ── Mode + master controls ── */}
       <div style={{
