@@ -35,6 +35,20 @@ run() {  # run <name> <command...>
   echo "[$TS] <<< $name (exit $?)" >> "$log"
 }
 
+# ── Wait for internet before running ──────────────────────────────────────────
+# A tick can fire right after the Mac wakes, before DNS/network is ready — which
+# made the tracking sync burn 300s failing on a DNS lookup. Wait up to ~60s for
+# connectivity; if still offline, skip this tick (launchd retries next interval).
+online=0
+for _ in $(seq 1 12); do
+  if curl -s -m 5 -o /dev/null https://www.googleapis.com 2>/dev/null; then online=1; break; fi
+  sleep 5
+done
+if [ "$online" -ne 1 ]; then
+  echo "[$(date +'%F %T')] tick skipped — no internet after 60s" >> "$LOG_DIR/launchd.out.log"
+  exit 0
+fi
+
 run orchestrator "$PY" -m us_lead_engine.orchestrator --once
 run sync         "$PY" sync_outreach_tracking.py
 run replies      "$PY" reply_tracker.py
