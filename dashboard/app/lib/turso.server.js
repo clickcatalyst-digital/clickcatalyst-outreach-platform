@@ -59,9 +59,13 @@ export async function run(sql, args = []) {
   return turso().execute({ sql, args })
 }
 
-// JSON Response shorthand for route handlers.
-export function json(data, init) {
-  return Response.json(data, init)
+// JSON Response shorthand for route handlers. Always no-store so no layer
+// (Next data cache, Render proxy, browser) can serve a stale snapshot — the
+// dashboard must always reflect live Turso state.
+export function json(data, init = {}) {
+  const headers = new Headers(init.headers)
+  headers.set('Cache-Control', 'no-store, max-age=0')
+  return Response.json(data, { ...init, headers })
 }
 
 // SQL fragment to scope outreach_analytics by country (mirrors api/database.country_filter).
