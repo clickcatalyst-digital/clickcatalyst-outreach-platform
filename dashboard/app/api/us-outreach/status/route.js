@@ -92,6 +92,7 @@ export async function GET() {
     corpus_remaining: corpusRemaining,
     reveals_this_month: cfg.reveals_this_month != null ? Number(cfg.reveals_this_month) : 0,
     monthly_enrich_cap: parseInt(cfg.monthly_enrich_cap ?? '90', 10),
+    apollo_cycle_start: cfg.apollo_cycle_start || null,
     test_count: parseInt(cfg.test_count ?? '5', 10),
     test_emails: testEmails,
     send_days: cfg.send_days || '0,1,2,3,4',

@@ -163,7 +163,7 @@ export default function USOutreachPage() {
           <Stat label="Corpus" value={s.corpus_remaining} sub="leads ready" />
           <Stat label="Reputation" value={s.reputation ?? '—'}
             color={rep(s.reputation)} sub={`vol ×${s.deliverability_multiplier}`} />
-          <Stat label="Reveals (cap)" value={`${s.reveals_this_month}/${s.monthly_enrich_cap}`} sub="logged · self-imposed" />
+          <Stat label="Reveals (cap)" value={`${s.reveals_this_month}/${s.monthly_enrich_cap}`} sub={`since ${s.apollo_cycle_start || '—'}`} />
         </div>
       </Section>
 
@@ -200,9 +200,19 @@ export default function USOutreachPage() {
             </div>
           </Row>
 
-          <Row label="Start date" last>
+          <Row label="Start date">
             <input type="date" defaultValue={s.start_date} key={s.start_date}
               onChange={e => patch('start_date', e.target.value)} style={numInput} />
+          </Row>
+
+          <Row label="Apollo credit cycle" last>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input type="date" defaultValue={s.apollo_cycle_start} key={s.apollo_cycle_start}
+                onChange={e => patch('apollo_cycle_start', e.target.value)} style={numInput} />
+              <input type="number" min="0" defaultValue={s.monthly_enrich_cap} key={s.monthly_enrich_cap}
+                onBlur={e => patch('monthly_enrich_cap', e.target.value)} style={{ ...numInput, width: 70 }} />
+              <span style={{ color: 'var(--muted)', fontSize: 12 }}>cycle start · total credits (from Apollo's account page — not readable via API)</span>
+            </div>
           </Row>
         </Card>
         <div style={{

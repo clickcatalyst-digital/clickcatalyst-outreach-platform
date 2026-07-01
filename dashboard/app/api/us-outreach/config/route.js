@@ -5,7 +5,7 @@ import { q, run, json } from '../../../lib/turso.server'
 const ALLOWED = new Set([
   'mode', 'enabled', 'test_count', 'start_hour', 'end_hour', 'send_days',
   'replenish_threshold', 'replenish_enrich_batch', 'monthly_enrich_cap',
-  'cycle_minutes', 'start_date', 'learning_threshold',
+  'apollo_cycle_start', 'cycle_minutes', 'start_date', 'learning_threshold',
 ])
 
 export async function GET() {

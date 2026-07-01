@@ -49,7 +49,13 @@ DEFAULTS = {
     "send_days": "0,1,2,3,4",       # Mon-Fri
     "replenish_threshold": "10",    # if corpus < this (prod) -> replenish
     "replenish_enrich_batch": "10", # leads to enrich per replenish
-    "monthly_enrich_cap": "90",     # safety cap on Apollo reveals/month
+    "monthly_enrich_cap": "90",     # safety cap on Apollo reveals per cycle — set this to
+                                    # the real lead-credit pool (Apollo account page) each
+                                    # time you top up; there's no API to read it live (see
+                                    # apollo_cycle_start below).
+    "apollo_cycle_start": "2026-06-08",  # Apollo's real billing-cycle start date (account
+                                    # page -> credit usage; NOT the calendar month — update
+                                    # this whenever Apollo's cycle rolls or you buy credits).
     "cycle_minutes": "20",
     "learning_threshold": "150",    # prod sends before send-time learning kicks in
 }
@@ -204,15 +210,25 @@ def _test_sent_today(conn):
     ).fetchone()[0]
 
 
-def _reveals_this_month(conn):
-    """Apollo reveal credits used this month (local estimate from us_leads.db cost log)."""
+def _reveals_this_month(conn, cfg=None):
+    """Apollo reveal credits used since Apollo's real billing-cycle start (local estimate
+    from us_leads.db cost log — there's no API to read Apollo's actual account balance
+    with a plain API key; only the documented usage_stats/api_usage_stats endpoint exists,
+    and it's per-endpoint rate limits, not the credit pool). Gates against `cfg.apollo_cycle_start`
+    (set from the Apollo account page), NOT the calendar month — caught 2026-07-01: gating
+    on calendar-month reset this to "0 used" on July 1st while the real Apollo cycle (which
+    runs 6/8 -> 7/8) still had only 27/120 credits left, which would have blown through the
+    real balance. Update apollo_cycle_start + monthly_enrich_cap in us_scheduler_config
+    whenever Apollo's cycle rolls or you buy more credits.
+    """
     try:
+        cycle_start = (cfg or {}).get("apollo_cycle_start") or "2026-06-08"
         from .config import DB_PATH as US_DB
         uc = sqlite3.connect(US_DB)
         n = uc.execute("""
             SELECT COALESCE(SUM(Credits_Used),0) FROM api_usage_log
-            WHERE Call_Type='reveal' AND Created_At >= date('now','start of month')
-        """).fetchone()[0]
+            WHERE Call_Type='reveal' AND Created_At >= ?
+        """, (cycle_start,)).fetchone()[0]
         uc.close()
         return n or 0
     except Exception:
@@ -269,11 +285,11 @@ def recompute_alerts(conn, cfg):
         _clear_alert(conn, "corpus_low")
         _clear_alert(conn, "corpus_empty")
 
-    # Credit cap
-    used = _reveals_this_month(conn)
+    # Credit cap — gated on the real Apollo billing cycle (apollo_cycle_start), not calendar month.
+    used = _reveals_this_month(conn, cfg)
     cap = int(cfg.get("monthly_enrich_cap", 90))
     if used >= cap:
-        _set_alert(conn, "credit_cap", "yellow", f"Monthly Apollo reveal cap hit ({used}/{cap}); replenish paused.")
+        _set_alert(conn, "credit_cap", "yellow", f"Apollo reveal cap hit ({used}/{cap} since {cfg.get('apollo_cycle_start')}); replenish paused.")
     else:
         _clear_alert(conn, "credit_cap")
 
@@ -336,10 +352,10 @@ def recompute_alerts(conn, cfg):
 # ---------------------------------------------------------------------------
 
 def replenish(conn, cfg):
-    used = _reveals_this_month(conn)
+    used = _reveals_this_month(conn, cfg)
     cap = int(cfg.get("monthly_enrich_cap", 90))
     if used >= cap:
-        print(f"   [replenish] credit cap reached ({used}/{cap}) — skipping")
+        print(f"   [replenish] credit cap reached ({used}/{cap} since {cfg.get('apollo_cycle_start')}) — skipping")
         return
     batch = min(int(cfg.get("replenish_enrich_batch", 10)), cap - used)
     page = int(cfg.get("search_page", "1"))
@@ -409,7 +425,7 @@ def run_cycle(verbose=True, force=False):
     # single-source status row; reveals_this_month is Mac-only (us_leads.db cost log).
     try:
         set_config("corpus_remaining", str(sender.corpus_remaining(conn)))
-        set_config("reveals_this_month", str(_reveals_this_month(conn)))
+        set_config("reveals_this_month", str(_reveals_this_month(conn, cfg)))
     except Exception:
         pass
 
@@ -501,8 +517,9 @@ def status():
         "deliverability_multiplier": mult, "reputation": score,
         "sent_today": sender.sent_today(conn),
         "corpus_remaining": sender.corpus_remaining(conn),
-        "reveals_this_month": _reveals_this_month(conn),
+        "reveals_this_month": _reveals_this_month(conn, cfg),
         "monthly_enrich_cap": int(cfg.get("monthly_enrich_cap", 90)),
+        "apollo_cycle_start": cfg.get("apollo_cycle_start"),
         "test_count": int(cfg.get("test_count", 5)),
         "test_emails": sender.get_test_emails(conn),
         "send_days": cfg.get("send_days", "0,1,2,3,4"),
